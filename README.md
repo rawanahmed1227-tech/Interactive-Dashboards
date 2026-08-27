@@ -1,0 +1,769 @@
+[portfolio_workforce_demand_dashboard.html](https://github.com/user-attachments/files/31519359/portfolio_workforce_demand_dashboard.html)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workforce Demand &amp; Vacancy Matching Dashboard — Portfolio Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#16232E;
+    --paper:#F2F5F5;
+    --brand:#123B5C;
+    --brand-deep:#0A2740;
+    --brand-line:#5FA0C4;
+    --accent:#1FA187;
+    --accent-soft:#DCF3EE;
+    --warn:#E8672C;
+    --warn-soft:#FCE6DA;
+    --card:#FFFFFF;
+    --border:#DCE4E6;
+    --muted:#57666D;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',sans-serif; font-size:15px; line-height:1.55;}
+  h1,h2,h3,.display{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.03em; font-weight:600; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+
+  .demo-banner{
+    background:var(--warn); color:#fff; text-align:center; padding:8px 16px;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.04em;
+    position:sticky; top:0; z-index:50;
+  }
+
+  .shell{display:flex; min-height:100vh;}
+
+  .sidebar{
+    width:264px; flex-shrink:0; color:#EAF3F7; position:sticky; top:34px; height:calc(100vh - 34px);
+    display:flex; flex-direction:column;
+    background-image:
+      linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%),
+      repeating-linear-gradient(0deg, rgba(95,160,196,.10) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(95,160,196,.10) 0 1px, transparent 1px 28px);
+  }
+  .sidebar-head{padding:26px 22px 16px; border-bottom:1px dashed rgba(234,243,247,.3);}
+  .sidebar-head .tag{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em; color:var(--brand-line); display:block; margin-bottom:6px;}
+  .sidebar-head h1{font-size:18px; line-height:1.28; color:#fff;}
+  .sidebar-nav{padding:12px 12px; overflow-y:auto; flex:1;}
+  .sidebar-nav a{display:flex; align-items:baseline; gap:10px; padding:9px 10px; border-radius:2px; text-decoration:none; font-size:12.5px; color:#C9DEE6; border-left:2px solid transparent; transition:background .15s,color .15s,border-color .15s;}
+  .sidebar-nav a .num{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--brand-line); width:20px; flex-shrink:0;}
+  .sidebar-nav a:hover,.sidebar-nav a.active{background:rgba(234,243,247,.08); color:#fff; border-left-color:var(--accent);}
+  .sidebar-foot{padding:14px 22px 20px; font-size:10.5px; color:rgba(234,243,247,.55); border-top:1px dashed rgba(234,243,247,.3); font-family:'IBM Plex Mono',monospace;}
+
+  .main{flex:1; min-width:0;}
+
+  .hero{position:relative; overflow:hidden; background:var(--brand); color:#fff; padding:48px 48px 34px;
+    background-image:
+      radial-gradient(circle at 85% 20%, rgba(31,161,135,.22), transparent 45%),
+      repeating-linear-gradient(0deg, rgba(95,160,196,.14) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(90deg, rgba(95,160,196,.14) 0 1px, transparent 1px 40px);
+  }
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.15em; color:var(--brand-line); margin-bottom:10px;}
+  .hero h1{font-size:32px; color:#fff; max-width:820px;}
+  .hero p.sub{max-width:700px; color:#C9DEE6; margin-top:14px; font-size:15px;}
+
+  .kpi-row{display:grid; grid-template-columns:repeat(5,1fr); gap:1px; margin-top:26px; background:rgba(234,243,247,.2); border:1px solid rgba(234,243,247,.25);}
+  .kpi{background:rgba(10,39,64,.55); padding:15px 16px;}
+  .kpi .val{font-family:'Oswald',sans-serif; font-size:26px; font-weight:600; color:#fff;}
+  .kpi .lbl{font-size:10.5px; color:#AFCBD6; text-transform:uppercase; letter-spacing:.06em; margin-top:4px;}
+
+  .content{padding:40px 48px 80px; max-width:1220px;}
+
+  .overview-nav{margin-bottom:48px;}
+  .chip-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px;}
+  .chip{background:#fff; border:1px solid var(--border); border-left:3px solid var(--brand-line); border-radius:3px; padding:12px 14px; text-decoration:none; color:var(--ink); display:flex; gap:10px; align-items:flex-start; transition:border-color .15s, transform .1s;}
+  .chip:hover{border-left-color:var(--accent); transform:translateX(2px);}
+  .chip .n{font-family:'IBM Plex Mono',monospace; color:var(--accent); font-weight:600; font-size:12px; flex-shrink:0; padding-top:1px;}
+  .chip .t{font-size:13px; font-weight:600; line-height:1.35;}
+
+  section.panel{margin-bottom:52px; scroll-margin-top:20px;}
+  .titleblock{display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:20px; gap:20px; flex-wrap:wrap;}
+  .titleblock h2{font-size:21px;}
+  .titleblock .meta{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); text-align:right; border:1px solid var(--border); padding:6px 10px; background:#fff;}
+  .titleblock .meta span{display:block;}
+
+  .grid-2{display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:stretch;}
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:3px; padding:18px 20px;}
+  .chart-card{min-height:320px; display:flex; flex-direction:column;}
+  .chart-card .chart-wrap{flex:1; position:relative;}
+  .chart-card .chart-wrap.tall{min-height:360px;}
+  .chart-card .chart-wrap.short{min-height:220px;}
+
+  .insight-card{background:#fff; border:1px solid var(--border); border-left:4px solid var(--accent); position:relative;}
+  .insight-card .kicker{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; color:var(--accent); text-transform:uppercase; margin-bottom:10px; font-weight:600;}
+  .insight-card .kicker::before{content:"◆"; font-size:9px;}
+  .insight-card p{margin:0 0 10px; font-size:14px; color:var(--ink);}
+  .insight-card p:last-child{margin-bottom:0;}
+  .insight-card b{color:var(--brand);}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .stat-strip .box{background:var(--paper); border:1px solid var(--border); padding:16px; text-align:center; border-radius:3px;}
+  .stat-strip .box .v{font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--brand);}
+  .stat-strip .box .l{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:4px;}
+
+  /* Filter bar */
+  .filter-bar{display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; background:#fff; border:1px solid var(--border); border-radius:3px; padding:16px 18px; margin-bottom:20px;}
+  .filter-field{display:flex; flex-direction:column; gap:5px; min-width:170px;}
+  .filter-field label{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+  .filter-field select, .filter-field input[type=text]{padding:8px 10px; border:1px solid var(--border); border-radius:3px; font-family:'IBM Plex Sans',sans-serif; font-size:13px; background:#fff; color:var(--ink);}
+  .filter-reset{padding:8px 16px; border:1px solid var(--brand); background:#fff; color:var(--brand); border-radius:3px; cursor:pointer; font-size:13px; font-family:'IBM Plex Sans',sans-serif; font-weight:600;}
+  .filter-reset:hover{background:var(--brand); color:#fff;}
+  .filter-count{margin-left:auto; align-self:center; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);}
+  .filter-count b{color:var(--accent); font-size:15px;}
+
+  table.data-table{width:100%; border-collapse:collapse; font-size:13px;}
+  table.data-table th{position:sticky; top:0; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); border-bottom:2px solid var(--ink); padding:9px 10px; background:#fff; cursor:pointer; white-space:nowrap;}
+  table.data-table th:hover{color:var(--accent);}
+  table.data-table td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+  table.data-table tr:hover td{background:var(--paper);}
+  table.data-table tr.is-dup td{background:var(--warn-soft);}
+  .table-scroll{max-height:480px; overflow:auto; border:1px solid var(--border); border-radius:3px;}
+  .table-foot{display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:12px; color:var(--muted);}
+  .table-foot button{font-family:'IBM Plex Sans',sans-serif; font-size:12.5px; padding:7px 14px; border:1px solid var(--border); background:#fff; border-radius:3px; cursor:pointer;}
+  .table-foot button:hover{border-color:var(--brand);}
+  .table-foot button:disabled{opacity:.4; cursor:default;}
+  .dup-badge{display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:var(--warn); color:#fff; font-size:10px; font-weight:700; margin-left:6px; flex-shrink:0;}
+  .score-pill{display:inline-block; padding:2px 8px; border-radius:10px; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;}
+  .status-pill{display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; white-space:nowrap;}
+
+  .gap-row{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);}
+  .gap-row:last-child{border-bottom:none;}
+  .gap-row .dname{width:220px; font-size:13px; font-weight:600; flex-shrink:0;}
+  .gap-bar-track{flex:1; background:var(--paper); border-radius:3px; height:18px; position:relative; overflow:hidden;}
+  .gap-bar-fill{height:100%; border-radius:3px;}
+  .gap-val{width:70px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:12.5px; flex-shrink:0;}
+
+  .method-box{
+    margin-top:22px; max-width:820px; background:rgba(10,39,64,.55); border:1px solid rgba(234,243,247,.25);
+    border-left:3px solid var(--accent); padding:15px 18px; font-size:13px; color:#DCEBF0;
+  }
+  .method-box b{color:#fff;}
+
+  footer{padding:26px 48px 50px; color:var(--muted); font-size:12px; border-top:1px dashed var(--border);}
+
+  @media (max-width:980px){
+    .shell{flex-direction:column;}
+    .sidebar{position:relative; width:100%; height:auto; top:0;}
+    .sidebar-nav{display:flex; flex-wrap:wrap; gap:4px;}
+    .grid-2, .grid-3{grid-template-columns:1fr;}
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .chip-grid{grid-template-columns:1fr;}
+    .content,.hero{padding-left:22px; padding-right:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">⚠ PORTFOLIO DEMO — 100% SYNTHETIC DATA. No real company, employee, vacancy, or business information is used.</div>
+
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="sidebar-head">
+      <span class="tag">HR ANALYTICS DEMO // FICTIONAL COMPANY</span>
+      <h1 id="companyTitle">Workforce Demand &amp; Vacancy Matching Dashboard</h1>
+    </div>
+    <div class="sidebar-nav" id="sidenav">
+      <a href="#overview"><span class="num">00</span>Overview</a>
+      <a href="#currentvsreq"><span class="num">01</span>Current vs. Required Workforce</a>
+      <a href="#gaps"><span class="num">02</span>Workforce Gap Analysis</a>
+      <a href="#explorer"><span class="num">03</span>Vacancy Explorer (Interactive)</a>
+      <a href="#deptposition"><span class="num">04</span>Department &amp; Position Analysis</a>
+      <a href="#vacancyanalysis"><span class="num">05</span>Vacancy Analysis</a>
+      <a href="#matching"><span class="num">06</span>Candidate-to-Vacancy Matching</a>
+    </div>
+    <div class="sidebar-foot">SYNTHETIC DATASET<br>Generated for demonstration only</div>
+  </nav>
+
+  <main class="main">
+
+    <div class="hero" id="overview">
+      <div class="eyebrow">WORKFORCE DEMAND &amp; INTERNAL MOBILITY — HR ANALYTICS PORTFOLIO PIECE</div>
+      <h1 id="heroTitle">Matching people to open roles before we hire from outside.</h1>
+      <p class="sub">A fictional construction group's workforce demand dashboard: current vs. required
+      headcount by department, where the biggest gaps are, every open vacancy by status and priority,
+      and which internal candidates are a fit — built as a portfolio demonstration with entirely
+      synthetic data.</p>
+
+      <div class="method-box">
+        <b>How candidates are matched (synthetic logic):</b> each recommended candidate meets the
+        vacancy's <b>minimum requirements on position and grade</b>, with <b>years of service</b> and
+        <b>qualification</b> also factored into the match score shown below. This mirrors a real
+        internal-mobility matching workflow, applied here to fabricated data.
+      </div>
+
+      <div class="kpi-row" id="kpiRow">
+        <div class="kpi"><div class="val" id="kpiTotalVac">–</div><div class="lbl">Total open vacancies</div></div>
+        <div class="kpi"><div class="val" id="kpiInternal">–</div><div class="lbl">Designated internal</div></div>
+        <div class="kpi"><div class="val" id="kpiMatched">–</div><div class="lbl">Vacancies with a match</div></div>
+        <div class="kpi"><div class="val" id="kpiFillRate">–</div><div class="lbl">Internal match rate</div></div>
+        <div class="kpi"><div class="val" id="kpiGap">–</div><div class="lbl">Total workforce gap (heads)</div></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- OVERVIEW NAV -->
+      <section class="panel overview-nav">
+        <div class="titleblock"><h2>What's in this dashboard</h2></div>
+        <p style="color:var(--muted); max-width:820px; margin-bottom:0;">Every figure below is generated
+        from a synthetic dataset — fictional departments, positions, grades, vacancy IDs and candidate
+        IDs — built purely to demonstrate a workforce-demand and internal-mobility analysis workflow.</p>
+        <div class="chip-grid">
+          <a class="chip" href="#currentvsreq"><span class="n">01</span><span class="t">Current vs. Required Workforce</span></a>
+          <a class="chip" href="#gaps"><span class="n">02</span><span class="t">Workforce Gap Analysis</span></a>
+          <a class="chip" href="#explorer"><span class="n">03</span><span class="t">Vacancy Explorer — interactive filters</span></a>
+          <a class="chip" href="#deptposition"><span class="n">04</span><span class="t">Department &amp; Position Analysis</span></a>
+          <a class="chip" href="#vacancyanalysis"><span class="n">05</span><span class="t">Vacancy Analysis</span></a>
+          <a class="chip" href="#matching"><span class="n">06</span><span class="t">Candidate-to-Vacancy Matching</span></a>
+        </div>
+      </section>
+
+      <!-- 01 CURRENT VS REQUIRED -->
+      <section class="panel" id="currentvsreq">
+        <div class="titleblock">
+          <h2>01 · Current vs. Required Workforce</h2>
+          <div class="meta"><span>Synthetic headcount plan</span><span>10 departments</span></div>
+        </div>
+        <div class="grid-2">
+          <div class="card chart-card">
+            <div class="chart-wrap tall"><canvas id="chartCurrentReq"></canvas></div>
+          </div>
+          <div class="card insight-card">
+            <div class="kicker">Insight</div>
+            <p><b>Project Controls &amp; Planning</b> shows the largest shortfall against its required
+            headcount, followed by Mechanical Engineering and Structural Design &amp; BIM.</p>
+            <p>Two departments — Civil Construction and Site Operations — are running at or slightly
+            above their target headcount, suggesting any surplus capacity there could be redeployed
+            toward the understaffed teams before opening new external requisitions.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 GAP ANALYSIS -->
+      <section class="panel" id="gaps">
+        <div class="titleblock">
+          <h2>02 · Workforce Gap Analysis</h2>
+          <div class="meta"><span>Required − Current</span><span>ranked, largest gap first</span></div>
+        </div>
+        <div class="card" id="gapList"></div>
+      </section>
+
+      <!-- 03 VACANCY EXPLORER (INTERACTIVE) -->
+      <section class="panel" id="explorer">
+        <div class="titleblock">
+          <h2>03 · Vacancy Explorer</h2>
+          <div class="meta"><span>Fully interactive</span><span>filters drive every chart below</span></div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-field">
+            <label>Department</label>
+            <select id="fDept"><option value="">All departments</option></select>
+          </div>
+          <div class="filter-field">
+            <label>Grade</label>
+            <select id="fGrade"><option value="">All grades</option></select>
+          </div>
+          <div class="filter-field">
+            <label>Status</label>
+            <select id="fStatus"><option value="">All statuses</option></select>
+          </div>
+          <div class="filter-field">
+            <label>Priority</label>
+            <select id="fPriority"><option value="">All priorities</option></select>
+          </div>
+          <div class="filter-field">
+            <label>Hiring Type</label>
+            <select id="fHiring"><option value="">All types</option></select>
+          </div>
+          <button class="filter-reset" id="resetFilters">Reset filters</button>
+          <div class="filter-count"><b id="filterCount">0</b> vacancies match your filters</div>
+        </div>
+
+        <div class="grid-3" style="margin-bottom:16px;">
+          <div class="card chart-card">
+            <h3 style="font-size:12px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:10px;">By Department</h3>
+            <div class="chart-wrap short"><canvas id="chartExpDept"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <h3 style="font-size:12px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:10px;">By Status</h3>
+            <div class="chart-wrap short"><canvas id="chartExpStatus"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <h3 style="font-size:12px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:10px;">By Priority</h3>
+            <div class="chart-wrap short"><canvas id="chartExpPriority"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-scroll">
+            <table class="data-table" id="vacTable">
+              <thead>
+                <tr>
+                  <th data-key="id">Vacancy ID</th>
+                  <th data-key="dept">Department</th>
+                  <th data-key="position">Position</th>
+                  <th data-key="grade">Grade</th>
+                  <th data-key="status">Status</th>
+                  <th data-key="priority">Priority</th>
+                  <th data-key="hiring_type">Hiring Type</th>
+                  <th data-key="days_open">Days Open</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="table-foot">
+          <span id="vacCount"></span>
+          <span>
+            <button id="vacPrev">‹ Prev</button>
+            <span id="vacPageInfo" class="mono" style="margin:0 8px;"></span>
+            <button id="vacNext">Next ›</button>
+          </span>
+        </div>
+      </section>
+
+      <!-- 04 DEPARTMENT & POSITION ANALYSIS -->
+      <section class="panel" id="deptposition">
+        <div class="titleblock">
+          <h2>04 · Department &amp; Position Analysis</h2>
+          <div class="meta"><span>All vacancies (unfiltered)</span><span>top positions shown</span></div>
+        </div>
+        <div class="grid-2">
+          <div class="card chart-card">
+            <div class="chart-wrap tall"><canvas id="chartDeptAll"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-wrap tall"><canvas id="chartPositionAll"></canvas></div>
+          </div>
+        </div>
+        <div class="card insight-card" style="margin-top:16px;">
+          <div class="kicker">Insight</div>
+          <p>Electrical Systems, Site Operations, Quality Assurance and IT &amp; Digital Engineering
+          carry the most open requisitions across the portfolio. At the position level, demand is
+          spread thinly across many distinct titles rather than concentrated in one role — typical of
+          a diversified, multi-project construction workforce.</p>
+        </div>
+      </section>
+
+      <!-- 05 VACANCY ANALYSIS -->
+      <section class="panel" id="vacancyanalysis">
+        <div class="titleblock">
+          <h2>05 · Vacancy Analysis</h2>
+          <div class="meta"><span>All vacancies</span><span>n = <span id="totalVacCountLabel"></span></span></div>
+        </div>
+        <div class="grid-3">
+          <div class="card chart-card">
+            <h3 style="font-size:12px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:10px;">Status</h3>
+            <div class="chart-wrap short"><canvas id="chartStatusAll"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <h3 style="font-size:12px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:10px;">Hiring Type</h3>
+            <div class="chart-wrap short"><canvas id="chartHiringAll"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <h3 style="font-size:12px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:10px;">Grade</h3>
+            <div class="chart-wrap short"><canvas id="chartGradeAll"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 CANDIDATE MATCHING -->
+      <section class="panel" id="matching">
+        <div class="titleblock">
+          <h2>06 · Candidate-to-Vacancy Matching</h2>
+          <div class="meta"><span>Synthetic matching engine output</span></div>
+        </div>
+        <div class="stat-strip" style="margin-bottom:16px;">
+          <div class="box"><div class="v" id="statMatched">–</div><div class="l">Vacancies with a match</div></div>
+          <div class="box"><div class="v" id="statCandidates">–</div><div class="l">Distinct candidates recommended</div></div>
+          <div class="box"><div class="v" id="statDup">–</div><div class="l">Candidates matched to 2+ roles</div></div>
+        </div>
+        <div class="filter-bar">
+          <div class="filter-field" style="flex:1; min-width:260px;">
+            <label>Search</label>
+            <input type="text" id="matchSearch" placeholder="Search candidate, position, department, vacancy ID…">
+          </div>
+          <div class="filter-count"><span class="dup-badge">×</span>&nbsp;= candidate matched to more than one open vacancy</div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-scroll">
+            <table class="data-table" id="matchTable">
+              <thead>
+                <tr>
+                  <th data-key="vac_id">Vacancy ID</th>
+                  <th data-key="dept">Department</th>
+                  <th data-key="position">Position</th>
+                  <th data-key="grade">Grade</th>
+                  <th data-key="cand_name">Candidate</th>
+                  <th data-key="cand_grade">Cand. Grade</th>
+                  <th data-key="years_service">Years Svc.</th>
+                  <th data-key="qualification">Qualification</th>
+                  <th data-key="match_score">Match Score</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="table-foot">
+          <span id="matchCount"></span>
+          <span>
+            <button id="matchPrev">‹ Prev</button>
+            <span id="matchPageInfo" class="mono" style="margin:0 8px;"></span>
+            <button id="matchNext">Next ›</button>
+          </span>
+        </div>
+      </section>
+
+    </div>
+
+    <footer>
+      Portfolio demonstration dashboard. Company name, departments, positions, grades, vacancy IDs,
+      candidate IDs, headcounts and all figures shown are <b>entirely synthetic</b> and generated for
+      illustration only — they do not represent any real organisation, employee, or business data.
+      Built with Chart.js; design and layout inspired by a Power BI-style analytics workflow.
+    </footer>
+  </main>
+</div>
+
+<script id="rawData" type="application/json">{"company": "Meridian Build Group", "departments": ["Civil Construction", "Electrical Systems", "Mechanical Engineering", "Structural Design & BIM", "Site Operations", "Procurement & Supply Chain", "Quality Assurance", "Health, Safety & Environment", "Project Controls & Planning", "IT & Digital Engineering"], "dept_headcount": [{"dept": "Civil Construction", "current": 43, "required": 42, "gap": -1}, {"dept": "Electrical Systems", "current": 60, "required": 63, "gap": 3}, {"dept": "Mechanical Engineering", "current": 35, "required": 45, "gap": 10}, {"dept": "Structural Design & BIM", "current": 32, "required": 39, "gap": 7}, {"dept": "Site Operations", "current": 33, "required": 32, "gap": -1}, {"dept": "Procurement & Supply Chain", "current": 53, "required": 55, "gap": 2}, {"dept": "Quality Assurance", "current": 26, "required": 31, "gap": 5}, {"dept": "Health, Safety & Environment", "current": 78, "required": 81, "gap": 3}, {"dept": "Project Controls & Planning", "current": 48, "required": 63, "gap": 15}, {"dept": "IT & Digital Engineering", "current": 21, "required": 28, "gap": 7}], "vacancies": [{"id": "VAC-3001", "dept": "Civil Construction", "position": "QC Engineer - Civil", "grade": "G8", "status": "Open - Not Posted", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager B", "bu": "BU Owner 4", "recruiter": "Recruiter K", "days_open": 50}, {"id": "VAC-3002", "dept": "Civil Construction", "position": "Site Foreman - Civil", "grade": "G9", "status": "On Hold", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager G", "bu": "BU Owner 1", "recruiter": "Recruiter O", "days_open": 42}, {"id": "VAC-3003", "dept": "Civil Construction", "position": "Technical Office Engineer - Civil", "grade": "G11", "status": "Open - Posted", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager D", "bu": "BU Owner 3", "recruiter": "Recruiter K", "days_open": 114}, {"id": "VAC-3004", "dept": "Civil Construction", "position": "Senior Site Engineer - Civil", "grade": "G11", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager C", "bu": "BU Owner 3", "recruiter": "Recruiter M", "days_open": 31}, {"id": "VAC-3005", "dept": "Civil Construction", "position": "Site Foreman - Civil", "grade": "G10", "status": "In Progress", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager I", "bu": "BU Owner 6", "recruiter": "Recruiter L", "days_open": 25}, {"id": "VAC-3006", "dept": "Civil Construction", "position": "QC Engineer - Civil", "grade": "G8", "status": "Filled", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager F", "bu": "BU Owner 1", "recruiter": "Recruiter L", "days_open": 110}, {"id": "VAC-3007", "dept": "Civil Construction", "position": "Site Engineer - Civil", "grade": "G10", "status": "Open - Posted", "priority": "High", "hiring_type": "Unassigned", "hm": "Hiring Manager J", "bu": "BU Owner 6", "recruiter": "Recruiter M", "days_open": 32}, {"id": "VAC-3008", "dept": "Electrical Systems", "position": "QC Engineer - Electrical", "grade": "G8", "status": "Filled", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager D", "bu": "BU Owner 6", "recruiter": "Recruiter O", "days_open": 73}, {"id": "VAC-3009", "dept": "Electrical Systems", "position": "VDC/BIM Engineer - Electrical", "grade": "G10", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager C", "bu": "BU Owner 5", "recruiter": "Recruiter N", "days_open": 16}, {"id": "VAC-3010", "dept": "Electrical Systems", "position": "Electrical Technician", "grade": "G11", "status": "Open - Not Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager J", "bu": "BU Owner 1", "recruiter": "Recruiter N", "days_open": 53}, {"id": "VAC-3011", "dept": "Electrical Systems", "position": "QC Engineer - Electrical", "grade": "G9", "status": "Filled", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager B", "bu": "BU Owner 6", "recruiter": "Recruiter O", "days_open": 101}, {"id": "VAC-3012", "dept": "Electrical Systems", "position": "VDC/BIM Engineer - Electrical", "grade": "G10", "status": "Open - Posted", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager A", "bu": "BU Owner 6", "recruiter": "Recruiter P", "days_open": 38}, {"id": "VAC-3013", "dept": "Electrical Systems", "position": "Senior Electrical Engineer", "grade": "G8", "status": "Open - Not Posted", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager I", "bu": "BU Owner 5", "recruiter": "Recruiter L", "days_open": 24}, {"id": "VAC-3014", "dept": "Electrical Systems", "position": "VDC/BIM Engineer - Electrical", "grade": "G10", "status": "In Progress", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager A", "bu": "BU Owner 5", "recruiter": "Recruiter M", "days_open": 67}, {"id": "VAC-3015", "dept": "Electrical Systems", "position": "Electrical Technician", "grade": "G6", "status": "Open - Posted", "priority": "Low", "hiring_type": "Unassigned", "hm": "Hiring Manager D", "bu": "BU Owner 1", "recruiter": "Recruiter L", "days_open": 117}, {"id": "VAC-3016", "dept": "Electrical Systems", "position": "Electrical Technician", "grade": "G6", "status": "Open - Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager C", "bu": "BU Owner 2", "recruiter": "Recruiter P", "days_open": 65}, {"id": "VAC-3017", "dept": "Electrical Systems", "position": "Senior Electrical Engineer", "grade": "G7", "status": "Filled", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager I", "bu": "BU Owner 6", "recruiter": "Recruiter P", "days_open": 30}, {"id": "VAC-3018", "dept": "Electrical Systems", "position": "VDC/BIM Engineer - Electrical", "grade": "G8", "status": "In Progress", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager H", "bu": "BU Owner 1", "recruiter": "Recruiter L", "days_open": 33}, {"id": "VAC-3019", "dept": "Mechanical Engineering", "position": "HVAC Site Engineer", "grade": "G5", "status": "In Progress", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager A", "bu": "BU Owner 2", "recruiter": "Recruiter K", "days_open": 120}, {"id": "VAC-3020", "dept": "Mechanical Engineering", "position": "Mechanical Technician", "grade": "G11", "status": "Open - Not Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager D", "bu": "BU Owner 5", "recruiter": "Recruiter L", "days_open": 97}, {"id": "VAC-3021", "dept": "Mechanical Engineering", "position": "QC Engineer - Mechanical", "grade": "G7", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager G", "bu": "BU Owner 3", "recruiter": "Recruiter N", "days_open": 57}, {"id": "VAC-3022", "dept": "Mechanical Engineering", "position": "QC Engineer - Mechanical", "grade": "G11", "status": "Open - Not Posted", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager A", "bu": "BU Owner 4", "recruiter": "Recruiter P", "days_open": 48}, {"id": "VAC-3023", "dept": "Mechanical Engineering", "position": "Mechanical Technician", "grade": "G7", "status": "Open - Not Posted", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager E", "bu": "BU Owner 4", "recruiter": "Recruiter L", "days_open": 116}, {"id": "VAC-3024", "dept": "Mechanical Engineering", "position": "Mechanical Technician", "grade": "G8", "status": "Filled", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager I", "bu": "BU Owner 1", "recruiter": "Recruiter K", "days_open": 101}, {"id": "VAC-3025", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G8", "status": "Open - Posted", "priority": "Low", "hiring_type": "Unassigned", "hm": "Hiring Manager C", "bu": "BU Owner 4", "recruiter": "Recruiter K", "days_open": 54}, {"id": "VAC-3026", "dept": "Structural Design & BIM", "position": "Structural Design Engineer", "grade": "G11", "status": "On Hold", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager I", "bu": "BU Owner 6", "recruiter": "Recruiter P", "days_open": 67}, {"id": "VAC-3027", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G7", "status": "Open - Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager A", "bu": "BU Owner 6", "recruiter": "Recruiter M", "days_open": 12}, {"id": "VAC-3028", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G9", "status": "In Progress", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager I", "bu": "BU Owner 1", "recruiter": "Talent Acquisition Team", "days_open": 28}, {"id": "VAC-3029", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G9", "status": "In Progress", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager J", "bu": "BU Owner 2", "recruiter": "Recruiter O", "days_open": 81}, {"id": "VAC-3030", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G9", "status": "Open - Posted", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager E", "bu": "BU Owner 2", "recruiter": "Recruiter P", "days_open": 96}, {"id": "VAC-3031", "dept": "Structural Design & BIM", "position": "Structural Design Engineer", "grade": "G7", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager F", "bu": "BU Owner 1", "recruiter": "Recruiter K", "days_open": 63}, {"id": "VAC-3032", "dept": "Site Operations", "position": "Site Operations Supervisor", "grade": "G6", "status": "Open - Posted", "priority": "High", "hiring_type": "Unassigned", "hm": "Hiring Manager B", "bu": "BU Owner 2", "recruiter": "Recruiter M", "days_open": 41}, {"id": "VAC-3033", "dept": "Site Operations", "position": "Heavy Equipment Operator", "grade": "G8", "status": "In Progress", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager I", "bu": "BU Owner 1", "recruiter": "Recruiter P", "days_open": 109}, {"id": "VAC-3034", "dept": "Site Operations", "position": "Logistics Coordinator", "grade": "G11", "status": "Open - Not Posted", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager B", "bu": "BU Owner 6", "recruiter": "Recruiter O", "days_open": 24}, {"id": "VAC-3035", "dept": "Site Operations", "position": "Logistics Coordinator", "grade": "G7", "status": "Open - Posted", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager E", "bu": "BU Owner 5", "recruiter": "Recruiter N", "days_open": 37}, {"id": "VAC-3036", "dept": "Site Operations", "position": "Site Operations Supervisor", "grade": "G6", "status": "Open - Posted", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager C", "bu": "BU Owner 6", "recruiter": "Recruiter M", "days_open": 25}, {"id": "VAC-3037", "dept": "Site Operations", "position": "Site Team Leader", "grade": "G9", "status": "Open - Posted", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager C", "bu": "BU Owner 5", "recruiter": "Recruiter K", "days_open": 111}, {"id": "VAC-3038", "dept": "Site Operations", "position": "Logistics Coordinator", "grade": "G9", "status": "Open - Not Posted", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager A", "bu": "BU Owner 3", "recruiter": "Recruiter L", "days_open": 92}, {"id": "VAC-3039", "dept": "Site Operations", "position": "Heavy Equipment Operator", "grade": "G9", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager J", "bu": "BU Owner 6", "recruiter": "Recruiter L", "days_open": 35}, {"id": "VAC-3040", "dept": "Site Operations", "position": "Heavy Equipment Operator", "grade": "G12", "status": "On Hold", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager F", "bu": "BU Owner 4", "recruiter": "Talent Acquisition Team", "days_open": 90}, {"id": "VAC-3041", "dept": "Site Operations", "position": "Heavy Equipment Operator", "grade": "G7", "status": "On Hold", "priority": "High", "hiring_type": "Unassigned", "hm": "Hiring Manager H", "bu": "BU Owner 2", "recruiter": "Recruiter L", "days_open": 109}, {"id": "VAC-3042", "dept": "Procurement & Supply Chain", "position": "Contracts Specialist", "grade": "G7", "status": "On Hold", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager D", "bu": "BU Owner 4", "recruiter": "Recruiter M", "days_open": 40}, {"id": "VAC-3043", "dept": "Procurement & Supply Chain", "position": "Procurement Officer", "grade": "G12", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager I", "bu": "BU Owner 3", "recruiter": "Recruiter K", "days_open": 19}, {"id": "VAC-3044", "dept": "Procurement & Supply Chain", "position": "Contracts Specialist", "grade": "G7", "status": "Filled", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager G", "bu": "BU Owner 3", "recruiter": "Recruiter P", "days_open": 105}, {"id": "VAC-3045", "dept": "Procurement & Supply Chain", "position": "Contracts Specialist", "grade": "G8", "status": "Filled", "priority": "High", "hiring_type": "Unassigned", "hm": "Hiring Manager D", "bu": "BU Owner 3", "recruiter": "Recruiter K", "days_open": 95}, {"id": "VAC-3046", "dept": "Procurement & Supply Chain", "position": "Procurement Team Leader", "grade": "G4", "status": "Filled", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager D", "bu": "BU Owner 3", "recruiter": "Recruiter N", "days_open": 13}, {"id": "VAC-3047", "dept": "Procurement & Supply Chain", "position": "Contracts Specialist", "grade": "G9", "status": "In Progress", "priority": "High", "hiring_type": "Unassigned", "hm": "Hiring Manager I", "bu": "BU Owner 3", "recruiter": "Recruiter P", "days_open": 57}, {"id": "VAC-3048", "dept": "Procurement & Supply Chain", "position": "Contracts Specialist", "grade": "G8", "status": "Open - Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager G", "bu": "BU Owner 6", "recruiter": "Recruiter P", "days_open": 120}, {"id": "VAC-3049", "dept": "Procurement & Supply Chain", "position": "Senior Buyer", "grade": "G9", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager E", "bu": "BU Owner 2", "recruiter": "Recruiter N", "days_open": 105}, {"id": "VAC-3050", "dept": "Procurement & Supply Chain", "position": "Contracts Specialist", "grade": "G8", "status": "Open - Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager C", "bu": "BU Owner 6", "recruiter": "Recruiter K", "days_open": 41}, {"id": "VAC-3051", "dept": "Quality Assurance", "position": "Materials Testing Engineer", "grade": "G9", "status": "Open - Posted", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager E", "bu": "BU Owner 2", "recruiter": "Talent Acquisition Team", "days_open": 30}, {"id": "VAC-3052", "dept": "Quality Assurance", "position": "QA Inspector", "grade": "G5", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager B", "bu": "BU Owner 4", "recruiter": "Recruiter N", "days_open": 118}, {"id": "VAC-3053", "dept": "Quality Assurance", "position": "Materials Testing Engineer", "grade": "G9", "status": "In Progress", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager C", "bu": "BU Owner 6", "recruiter": "Recruiter P", "days_open": 5}, {"id": "VAC-3054", "dept": "Quality Assurance", "position": "QA Inspector", "grade": "G10", "status": "Open - Posted", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager H", "bu": "BU Owner 1", "recruiter": "Recruiter O", "days_open": 36}, {"id": "VAC-3055", "dept": "Quality Assurance", "position": "QA Inspector", "grade": "G8", "status": "On Hold", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager J", "bu": "BU Owner 3", "recruiter": "Talent Acquisition Team", "days_open": 119}, {"id": "VAC-3056", "dept": "Quality Assurance", "position": "Senior QA Engineer", "grade": "G9", "status": "In Progress", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager I", "bu": "BU Owner 4", "recruiter": "Recruiter L", "days_open": 100}, {"id": "VAC-3057", "dept": "Quality Assurance", "position": "Senior QA Engineer", "grade": "G8", "status": "On Hold", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager I", "bu": "BU Owner 4", "recruiter": "Recruiter P", "days_open": 35}, {"id": "VAC-3058", "dept": "Quality Assurance", "position": "Senior QA Engineer", "grade": "G8", "status": "In Progress", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager I", "bu": "BU Owner 1", "recruiter": "Recruiter L", "days_open": 24}, {"id": "VAC-3059", "dept": "Quality Assurance", "position": "QA Inspector", "grade": "G8", "status": "Open - Not Posted", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager F", "bu": "BU Owner 5", "recruiter": "Recruiter N", "days_open": 58}, {"id": "VAC-3060", "dept": "Quality Assurance", "position": "QA Inspector", "grade": "G7", "status": "Open - Posted", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager A", "bu": "BU Owner 5", "recruiter": "Recruiter N", "days_open": 66}, {"id": "VAC-3061", "dept": "Health, Safety & Environment", "position": "Senior HSE Supervisor", "grade": "G7", "status": "Open - Posted", "priority": "Low", "hiring_type": "Unassigned", "hm": "Hiring Manager I", "bu": "BU Owner 6", "recruiter": "Recruiter P", "days_open": 74}, {"id": "VAC-3062", "dept": "Health, Safety & Environment", "position": "Environmental Compliance Engineer", "grade": "G11", "status": "Open - Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager G", "bu": "BU Owner 3", "recruiter": "Recruiter P", "days_open": 91}, {"id": "VAC-3063", "dept": "Health, Safety & Environment", "position": "Senior HSE Supervisor", "grade": "G10", "status": "On Hold", "priority": "Low", "hiring_type": "Unassigned", "hm": "Hiring Manager I", "bu": "BU Owner 1", "recruiter": "Recruiter N", "days_open": 80}, {"id": "VAC-3064", "dept": "Health, Safety & Environment", "position": "Environmental Compliance Engineer", "grade": "G9", "status": "Open - Not Posted", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager C", "bu": "BU Owner 1", "recruiter": "Recruiter M", "days_open": 53}, {"id": "VAC-3065", "dept": "Health, Safety & Environment", "position": "Senior HSE Supervisor", "grade": "G7", "status": "Open - Posted", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager G", "bu": "BU Owner 3", "recruiter": "Talent Acquisition Team", "days_open": 15}, {"id": "VAC-3066", "dept": "Health, Safety & Environment", "position": "Senior HSE Supervisor", "grade": "G4", "status": "In Progress", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager B", "bu": "BU Owner 6", "recruiter": "Recruiter K", "days_open": 101}, {"id": "VAC-3067", "dept": "Project Controls & Planning", "position": "Senior Planning Engineer", "grade": "G7", "status": "Open - Not Posted", "priority": "High", "hiring_type": "Internal", "hm": "Hiring Manager B", "bu": "BU Owner 5", "recruiter": "Recruiter L", "days_open": 64}, {"id": "VAC-3068", "dept": "Project Controls & Planning", "position": "Cost Control Analyst", "grade": "G10", "status": "Open - Not Posted", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager B", "bu": "BU Owner 2", "recruiter": "Recruiter M", "days_open": 18}, {"id": "VAC-3069", "dept": "Project Controls & Planning", "position": "Planning Engineer", "grade": "G11", "status": "In Progress", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager D", "bu": "BU Owner 1", "recruiter": "Recruiter O", "days_open": 93}, {"id": "VAC-3070", "dept": "Project Controls & Planning", "position": "Senior Planning Engineer", "grade": "G6", "status": "On Hold", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager B", "bu": "BU Owner 5", "recruiter": "Talent Acquisition Team", "days_open": 10}, {"id": "VAC-3071", "dept": "Project Controls & Planning", "position": "Cost Control Analyst", "grade": "G9", "status": "In Progress", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager A", "bu": "BU Owner 4", "recruiter": "Talent Acquisition Team", "days_open": 67}, {"id": "VAC-3072", "dept": "Project Controls & Planning", "position": "Planning Engineer", "grade": "G8", "status": "Open - Posted", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager C", "bu": "BU Owner 4", "recruiter": "Recruiter L", "days_open": 98}, {"id": "VAC-3073", "dept": "IT & Digital Engineering", "position": "ERP Specialist", "grade": "G7", "status": "On Hold", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager G", "bu": "BU Owner 6", "recruiter": "Recruiter O", "days_open": 39}, {"id": "VAC-3074", "dept": "IT & Digital Engineering", "position": "Digital Systems Analyst", "grade": "G11", "status": "On Hold", "priority": "High", "hiring_type": "Unassigned", "hm": "Hiring Manager D", "bu": "BU Owner 4", "recruiter": "Recruiter O", "days_open": 83}, {"id": "VAC-3075", "dept": "IT & Digital Engineering", "position": "ERP Specialist", "grade": "G8", "status": "Open - Not Posted", "priority": "Low", "hiring_type": "Internal", "hm": "Hiring Manager D", "bu": "BU Owner 3", "recruiter": "Talent Acquisition Team", "days_open": 38}, {"id": "VAC-3076", "dept": "IT & Digital Engineering", "position": "Digital Systems Analyst", "grade": "G7", "status": "In Progress", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager I", "bu": "BU Owner 2", "recruiter": "Recruiter K", "days_open": 35}, {"id": "VAC-3077", "dept": "IT & Digital Engineering", "position": "ERP Specialist", "grade": "G8", "status": "In Progress", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager H", "bu": "BU Owner 4", "recruiter": "Talent Acquisition Team", "days_open": 7}, {"id": "VAC-3078", "dept": "IT & Digital Engineering", "position": "IT Support Engineer", "grade": "G7", "status": "Open - Posted", "priority": "High", "hiring_type": "External", "hm": "Hiring Manager F", "bu": "BU Owner 4", "recruiter": "Recruiter O", "days_open": 72}, {"id": "VAC-3079", "dept": "IT & Digital Engineering", "position": "Digital Systems Analyst", "grade": "G8", "status": "In Progress", "priority": "Medium", "hiring_type": "External", "hm": "Hiring Manager E", "bu": "BU Owner 3", "recruiter": "Recruiter M", "days_open": 34}, {"id": "VAC-3080", "dept": "IT & Digital Engineering", "position": "IT Support Engineer", "grade": "G10", "status": "Open - Posted", "priority": "Medium", "hiring_type": "Unassigned", "hm": "Hiring Manager C", "bu": "BU Owner 2", "recruiter": "Recruiter L", "days_open": 99}, {"id": "VAC-3081", "dept": "IT & Digital Engineering", "position": "Digital Systems Analyst", "grade": "G7", "status": "In Progress", "priority": "Low", "hiring_type": "External", "hm": "Hiring Manager B", "bu": "BU Owner 2", "recruiter": "Recruiter M", "days_open": 34}, {"id": "VAC-3082", "dept": "IT & Digital Engineering", "position": "Digital Systems Analyst", "grade": "G7", "status": "Open - Not Posted", "priority": "Medium", "hiring_type": "Internal", "hm": "Hiring Manager A", "bu": "BU Owner 5", "recruiter": "Recruiter M", "days_open": 94}], "matches": [{"vac_id": "VAC-3001", "dept": "Civil Construction", "position": "QC Engineer - Civil", "grade": "G8", "bu": "BU Owner 4", "hm": "Hiring Manager B", "cand_id": "EMP-5046", "cand_name": "Peyton Vance", "cand_dept": "Structural Design & BIM", "cand_grade": "G8", "years_service": 8.4, "qualification": "Business Administration", "match_score": 82, "dup": true}, {"vac_id": "VAC-3003", "dept": "Civil Construction", "position": "Technical Office Engineer - Civil", "grade": "G11", "bu": "BU Owner 3", "hm": "Hiring Manager D", "cand_id": "EMP-5016", "cand_name": "Marlowe Kingston", "cand_dept": "IT & Digital Engineering", "cand_grade": "G7", "years_service": 1.7, "qualification": "Civil Engineering", "match_score": 89, "dup": false}, {"vac_id": "VAC-3004", "dept": "Civil Construction", "position": "Senior Site Engineer - Civil", "grade": "G11", "bu": "BU Owner 3", "hm": "Hiring Manager C", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3007", "dept": "Civil Construction", "position": "Site Engineer - Civil", "grade": "G10", "bu": "BU Owner 6", "hm": "Hiring Manager J", "cand_id": "EMP-5074", "cand_name": "Taylor Yates", "cand_dept": "Project Controls & Planning", "cand_grade": "G7", "years_service": 3.4, "qualification": "Business Administration", "match_score": 85, "dup": false}, {"vac_id": "VAC-3009", "dept": "Electrical Systems", "position": "VDC/BIM Engineer - Electrical", "grade": "G10", "bu": "BU Owner 5", "hm": "Hiring Manager C", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3012", "dept": "Electrical Systems", "position": "VDC/BIM Engineer - Electrical", "grade": "G10", "bu": "BU Owner 6", "hm": "Hiring Manager A", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3013", "dept": "Electrical Systems", "position": "Senior Electrical Engineer", "grade": "G8", "bu": "BU Owner 5", "hm": "Hiring Manager I", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3015", "dept": "Electrical Systems", "position": "Electrical Technician", "grade": "G6", "bu": "BU Owner 1", "hm": "Hiring Manager D", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3018", "dept": "Electrical Systems", "position": "VDC/BIM Engineer - Electrical", "grade": "G8", "bu": "BU Owner 1", "hm": "Hiring Manager H", "cand_id": "EMP-5086", "cand_name": "Remy Underwood", "cand_dept": "Project Controls & Planning", "cand_grade": "G10", "years_service": 3.4, "qualification": "Information Systems", "match_score": 97, "dup": true}, {"vac_id": "VAC-3019", "dept": "Mechanical Engineering", "position": "HVAC Site Engineer", "grade": "G5", "bu": "BU Owner 2", "hm": "Hiring Manager A", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3021", "dept": "Mechanical Engineering", "position": "QC Engineer - Mechanical", "grade": "G7", "bu": "BU Owner 3", "hm": "Hiring Manager G", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3025", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G8", "bu": "BU Owner 4", "hm": "Hiring Manager C", "cand_id": "EMP-5055", "cand_name": "Elliot Yates", "cand_dept": "Mechanical Engineering", "cand_grade": "G9", "years_service": 12.7, "qualification": "Civil Engineering", "match_score": 88, "dup": true}, {"vac_id": "VAC-3028", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G9", "bu": "BU Owner 1", "hm": "Hiring Manager I", "cand_id": "EMP-5053", "cand_name": "Wren Thorne", "cand_dept": "Health, Safety & Environment", "cand_grade": "G10", "years_service": 12.7, "qualification": "Business Administration", "match_score": 96, "dup": true}, {"vac_id": "VAC-3029", "dept": "Structural Design & BIM", "position": "BIM Coordinator", "grade": "G9", "bu": "BU Owner 2", "hm": "Hiring Manager J", "cand_id": "EMP-5086", "cand_name": "Remy Underwood", "cand_dept": "Project Controls & Planning", "cand_grade": "G10", "years_service": 3.4, "qualification": "Information Systems", "match_score": 80, "dup": true}, {"vac_id": "VAC-3031", "dept": "Structural Design & BIM", "position": "Structural Design Engineer", "grade": "G7", "bu": "BU Owner 1", "hm": "Hiring Manager F", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3032", "dept": "Site Operations", "position": "Site Operations Supervisor", "grade": "G6", "bu": "BU Owner 2", "hm": "Hiring Manager B", "cand_id": "EMP-5007", "cand_name": "Cameron Sinclair", "cand_dept": "IT & Digital Engineering", "cand_grade": "G6", "years_service": 13.5, "qualification": "Electrical Engineering", "match_score": 83, "dup": true}, {"vac_id": "VAC-3033", "dept": "Site Operations", "position": "Heavy Equipment Operator", "grade": "G8", "bu": "BU Owner 1", "hm": "Hiring Manager I", "cand_id": "EMP-5073", "cand_name": "Jordan Zamora", "cand_dept": "Procurement & Supply Chain", "cand_grade": "G7", "years_service": 2.2, "qualification": "Business Administration", "match_score": 97, "dup": false}, {"vac_id": "VAC-3034", "dept": "Site Operations", "position": "Logistics Coordinator", "grade": "G11", "bu": "BU Owner 6", "hm": "Hiring Manager B", "cand_id": "EMP-5053", "cand_name": "Wren Thorne", "cand_dept": "Health, Safety & Environment", "cand_grade": "G10", "years_service": 12.7, "qualification": "Business Administration", "match_score": 97, "dup": true}, {"vac_id": "VAC-3036", "dept": "Site Operations", "position": "Site Operations Supervisor", "grade": "G6", "bu": "BU Owner 6", "hm": "Hiring Manager C", "cand_id": "EMP-5077", "cand_name": "Elliot Anders", "cand_dept": "Mechanical Engineering", "cand_grade": "G4", "years_service": 11.2, "qualification": "Business Administration", "match_score": 99, "dup": true}, {"vac_id": "VAC-3037", "dept": "Site Operations", "position": "Site Team Leader", "grade": "G9", "bu": "BU Owner 5", "hm": "Hiring Manager C", "cand_id": "EMP-5037", "cand_name": "Remy Delgado", "cand_dept": "Health, Safety & Environment", "cand_grade": "G6", "years_service": 12.8, "qualification": "Civil Engineering", "match_score": 86, "dup": true}, {"vac_id": "VAC-3038", "dept": "Site Operations", "position": "Logistics Coordinator", "grade": "G9", "bu": "BU Owner 3", "hm": "Hiring Manager A", "cand_id": "EMP-5007", "cand_name": "Cameron Sinclair", "cand_dept": "IT & Digital Engineering", "cand_grade": "G6", "years_service": 13.5, "qualification": "Electrical Engineering", "match_score": 91, "dup": true}, {"vac_id": "VAC-3039", "dept": "Site Operations", "position": "Heavy Equipment Operator", "grade": "G9", "bu": "BU Owner 6", "hm": "Hiring Manager J", "cand_id": "EMP-5077", "cand_name": "Elliot Anders", "cand_dept": "Mechanical Engineering", "cand_grade": "G4", "years_service": 11.2, "qualification": "Business Administration", "match_score": 94, "dup": true}, {"vac_id": "VAC-3043", "dept": "Procurement & Supply Chain", "position": "Procurement Officer", "grade": "G12", "bu": "BU Owner 3", "hm": "Hiring Manager I", "cand_id": "EMP-5037", "cand_name": "Remy Delgado", "cand_dept": "Health, Safety & Environment", "cand_grade": "G6", "years_service": 12.8, "qualification": "Civil Engineering", "match_score": 97, "dup": true}, {"vac_id": "VAC-3047", "dept": "Procurement & Supply Chain", "position": "Contracts Specialist", "grade": "G9", "bu": "BU Owner 3", "hm": "Hiring Manager I", "cand_id": "EMP-5046", "cand_name": "Peyton Vance", "cand_dept": "Structural Design & BIM", "cand_grade": "G8", "years_service": 8.4, "qualification": "Business Administration", "match_score": 82, "dup": true}, {"vac_id": "VAC-3049", "dept": "Procurement & Supply Chain", "position": "Senior Buyer", "grade": "G9", "bu": "BU Owner 2", "hm": "Hiring Manager E", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3052", "dept": "Quality Assurance", "position": "QA Inspector", "grade": "G5", "bu": "BU Owner 4", "hm": "Hiring Manager B", "cand_id": "EMP-5077", "cand_name": "Elliot Anders", "cand_dept": "Mechanical Engineering", "cand_grade": "G4", "years_service": 11.2, "qualification": "Business Administration", "match_score": 91, "dup": true}, {"vac_id": "VAC-3053", "dept": "Quality Assurance", "position": "Materials Testing Engineer", "grade": "G9", "bu": "BU Owner 6", "hm": "Hiring Manager C", "cand_id": "EMP-5046", "cand_name": "Peyton Vance", "cand_dept": "Structural Design & BIM", "cand_grade": "G8", "years_service": 8.4, "qualification": "Business Administration", "match_score": 94, "dup": true}, {"vac_id": "VAC-3056", "dept": "Quality Assurance", "position": "Senior QA Engineer", "grade": "G9", "bu": "BU Owner 4", "hm": "Hiring Manager I", "cand_id": "EMP-5007", "cand_name": "Cameron Sinclair", "cand_dept": "IT & Digital Engineering", "cand_grade": "G6", "years_service": 13.5, "qualification": "Electrical Engineering", "match_score": 80, "dup": true}, {"vac_id": "VAC-3058", "dept": "Quality Assurance", "position": "Senior QA Engineer", "grade": "G8", "bu": "BU Owner 1", "hm": "Hiring Manager I", "cand_id": "EMP-5056", "cand_name": "Cameron Zamora", "cand_dept": "Health, Safety & Environment", "cand_grade": "G5", "years_service": 5.4, "qualification": "Mechanical Engineering", "match_score": 78, "dup": false}, {"vac_id": "VAC-3059", "dept": "Quality Assurance", "position": "QA Inspector", "grade": "G8", "bu": "BU Owner 5", "hm": "Hiring Manager F", "cand_id": "EMP-5007", "cand_name": "Cameron Sinclair", "cand_dept": "IT & Digital Engineering", "cand_grade": "G6", "years_service": 13.5, "qualification": "Electrical Engineering", "match_score": 96, "dup": true}, {"vac_id": "VAC-3061", "dept": "Health, Safety & Environment", "position": "Senior HSE Supervisor", "grade": "G7", "bu": "BU Owner 6", "hm": "Hiring Manager I", "cand_id": "EMP-5037", "cand_name": "Remy Delgado", "cand_dept": "Health, Safety & Environment", "cand_grade": "G6", "years_service": 12.8, "qualification": "Civil Engineering", "match_score": 87, "dup": true}, {"vac_id": "VAC-3064", "dept": "Health, Safety & Environment", "position": "Environmental Compliance Engineer", "grade": "G9", "bu": "BU Owner 1", "hm": "Hiring Manager C", "cand_id": "EMP-5007", "cand_name": "Cameron Sinclair", "cand_dept": "IT & Digital Engineering", "cand_grade": "G6", "years_service": 13.5, "qualification": "Electrical Engineering", "match_score": 83, "dup": true}, {"vac_id": "VAC-3065", "dept": "Health, Safety & Environment", "position": "Senior HSE Supervisor", "grade": "G7", "bu": "BU Owner 3", "hm": "Hiring Manager G", "cand_id": null, "cand_name": "No Match", "cand_dept": null, "cand_grade": null, "years_service": null, "qualification": null, "match_score": null, "dup": false}, {"vac_id": "VAC-3066", "dept": "Health, Safety & Environment", "position": "Senior HSE Supervisor", "grade": "G4", "bu": "BU Owner 6", "hm": "Hiring Manager B", "cand_id": "EMP-5047", "cand_name": "Rowan Underwood", "cand_dept": "Site Operations", "cand_grade": "G8", "years_service": 9.5, "qualification": "Information Systems", "match_score": 80, "dup": false}, {"vac_id": "VAC-3067", "dept": "Project Controls & Planning", "position": "Senior Planning Engineer", "grade": "G7", "bu": "BU Owner 5", "hm": "Hiring Manager B", "cand_id": "EMP-5037", "cand_name": "Remy Delgado", "cand_dept": "Health, Safety & Environment", "cand_grade": "G6", "years_service": 12.8, "qualification": "Civil Engineering", "match_score": 96, "dup": true}, {"vac_id": "VAC-3069", "dept": "Project Controls & Planning", "position": "Planning Engineer", "grade": "G11", "bu": "BU Owner 1", "hm": "Hiring Manager D", "cand_id": "EMP-5055", "cand_name": "Elliot Yates", "cand_dept": "Mechanical Engineering", "cand_grade": "G9", "years_service": 12.7, "qualification": "Civil Engineering", "match_score": 88, "dup": true}, {"vac_id": "VAC-3075", "dept": "IT & Digital Engineering", "position": "ERP Specialist", "grade": "G8", "bu": "BU Owner 3", "hm": "Hiring Manager D", "cand_id": "EMP-5010", "cand_name": "Cameron Brooks", "cand_dept": "Structural Design & BIM", "cand_grade": "G7", "years_service": 4.3, "qualification": "Information Systems", "match_score": 94, "dup": false}, {"vac_id": "VAC-3080", "dept": "IT & Digital Engineering", "position": "IT Support Engineer", "grade": "G10", "bu": "BU Owner 2", "hm": "Hiring Manager C", "cand_id": "EMP-5046", "cand_name": "Peyton Vance", "cand_dept": "Structural Design & BIM", "cand_grade": "G8", "years_service": 8.4, "qualification": "Business Administration", "match_score": 89, "dup": true}, {"vac_id": "VAC-3082", "dept": "IT & Digital Engineering", "position": "Digital Systems Analyst", "grade": "G7", "bu": "BU Owner 5", "hm": "Hiring Manager A", "cand_id": "EMP-5083", "cand_name": "Shiloh Carver", "cand_dept": "Procurement & Supply Chain", "cand_grade": "G9", "years_service": 1.4, "qualification": "Occupational Health & Safety", "match_score": 82, "dup": false}]}</script>
+<script>
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+Chart.defaults.color = '#57666D';
+Chart.defaults.font.size = 12;
+
+const DATA = JSON.parse(document.getElementById('rawData').textContent);
+const vacancies = DATA.vacancies;
+const matches = DATA.matches;
+const deptHeadcount = DATA.dept_headcount;
+
+document.getElementById('companyTitle').textContent = "Workforce Demand & Vacancy Matching Dashboard";
+document.getElementById('heroTitle').textContent = "Matching people to open roles before we hire from outside.";
+
+const PALETTE = ['#123B5C','#1FA187','#5FA0C4','#E8672C','#8FC0CF','#2E7D5B','#A9C7D1','#F2A15C','#57666D','#0A2740'];
+
+function barChart(ctx, labels, data, opts={}){
+  return new Chart(ctx, {
+    type:'bar',
+    data:{ labels:labels, datasets:[{ data:data, backgroundColor: opts.color || '#123B5C', borderRadius:3, maxBarThickness: opts.thick || 20 }]},
+    options:{
+      indexAxis: opts.vertical ? 'x' : 'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0A2740' } },
+      scales: opts.vertical ? {
+        x:{ grid:{display:false}, ticks:{ font:{size:10.5} } },
+        y:{ grid:{color:'#E4EAEC'}, beginAtZero:true }
+      } : {
+        x:{ grid:{color:'#E4EAEC'}, beginAtZero:true },
+        y:{ grid:{display:false}, ticks:{ font:{size:10.5} } }
+      }
+    }
+  });
+}
+function groupedBar(ctx, labels, datasets, opts={}){
+  return new Chart(ctx, {
+    type:'bar',
+    data:{ labels:labels, datasets:datasets },
+    options:{
+      indexAxis: opts.horizontal ? 'y' : 'x',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ boxWidth:12, font:{size:11.5} } }, tooltip:{ backgroundColor:'#0A2740' } },
+      scales:{ x:{ grid: opts.horizontal? {color:'#E4EAEC'} : {display:false} }, y:{ grid: opts.horizontal? {display:false} : {color:'#E4EAEC'}, beginAtZero:true } }
+    }
+  });
+}
+function doughnut(ctx, labels, data, palette){
+  return new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:labels, datasets:[{ data:data, backgroundColor:palette || PALETTE, borderColor:'#fff', borderWidth:2 }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10.5}, padding:8 } }, tooltip:{ backgroundColor:'#0A2740' } },
+      cutout:'55%'
+    }
+  });
+}
+
+/* ---------------- KPIs ---------------- */
+const totalVac = vacancies.length;
+const internalVac = vacancies.filter(v=>v.hiring_type==='Internal').length;
+const matchedCount = matches.filter(m=>m.cand_id).length;
+const eligibleCount = matches.length;
+const fillRate = eligibleCount ? (matchedCount/eligibleCount*100) : 0;
+const totalGap = deptHeadcount.reduce((s,d)=>s+d.gap,0);
+
+document.getElementById('kpiTotalVac').textContent = totalVac;
+document.getElementById('kpiInternal').textContent = internalVac;
+document.getElementById('kpiMatched').textContent = matchedCount;
+document.getElementById('kpiFillRate').textContent = fillRate.toFixed(0)+'%';
+document.getElementById('kpiGap').textContent = totalGap;
+document.getElementById('totalVacCountLabel').textContent = totalVac;
+
+/* ---------------- 01 Current vs Required ---------------- */
+const sortedDept = [...deptHeadcount].sort((a,b)=> b.gap - a.gap);
+groupedBar(document.getElementById('chartCurrentReq'),
+  sortedDept.map(d=>d.dept),
+  [
+    { label:'Current Headcount', data: sortedDept.map(d=>d.current), backgroundColor:'#5FA0C4', borderRadius:3, maxBarThickness:16 },
+    { label:'Required Headcount', data: sortedDept.map(d=>d.required), backgroundColor:'#123B5C', borderRadius:3, maxBarThickness:16 }
+  ],
+  {horizontal:true}
+);
+
+/* ---------------- 02 Gap list ---------------- */
+const gapList = document.getElementById('gapList');
+const maxGap = Math.max(...deptHeadcount.map(d=>Math.abs(d.gap)), 1);
+sortedDept.forEach(d=>{
+  const row = document.createElement('div');
+  row.className = 'gap-row';
+  const pct = Math.min(100, Math.abs(d.gap)/maxGap*100);
+  const color = d.gap > 0 ? '#E8672C' : '#1FA187';
+  const label = d.gap > 0 ? `${d.gap} short` : d.gap < 0 ? `${Math.abs(d.gap)} surplus` : 'on target';
+  row.innerHTML = `
+    <div class="dname">${d.dept}</div>
+    <div class="gap-bar-track"><div class="gap-bar-fill" style="width:${pct}%; background:${color};"></div></div>
+    <div class="gap-val" style="color:${color};">${label}</div>`;
+  gapList.appendChild(row);
+});
+
+/* ---------------- 03 Vacancy Explorer (interactive) ---------------- */
+function uniq(arr, key){ return [...new Set(arr.map(v=>v[key]))].sort(); }
+function fillSelect(id, values){
+  const sel = document.getElementById(id);
+  values.forEach(v=>{
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+}
+fillSelect('fDept', uniq(vacancies,'dept'));
+fillSelect('fGrade', uniq(vacancies,'grade').sort((a,b)=> parseInt(a.slice(1))-parseInt(b.slice(1))));
+fillSelect('fStatus', uniq(vacancies,'status'));
+fillSelect('fPriority', ['High','Medium','Low']);
+fillSelect('fHiring', uniq(vacancies,'hiring_type'));
+
+let expDeptChart, expStatusChart, expPriorityChart;
+let vacPage = 1;
+const vacPageSize = 10;
+let vacSortKey = null, vacSortAsc = true;
+let currentFiltered = vacancies.slice();
+
+function applyFilters(){
+  const dept = document.getElementById('fDept').value;
+  const grade = document.getElementById('fGrade').value;
+  const status = document.getElementById('fStatus').value;
+  const priority = document.getElementById('fPriority').value;
+  const hiring = document.getElementById('fHiring').value;
+  currentFiltered = vacancies.filter(v =>
+    (!dept || v.dept===dept) &&
+    (!grade || v.grade===grade) &&
+    (!status || v.status===status) &&
+    (!priority || v.priority===priority) &&
+    (!hiring || v.hiring_type===hiring)
+  );
+  if(vacSortKey) sortVac();
+  vacPage = 1;
+  renderExplorer();
+}
+
+function countBy(arr, key){
+  const c = {};
+  arr.forEach(v=>{ c[v[key]] = (c[v[key]]||0)+1; });
+  return c;
+}
+
+function renderExplorer(){
+  document.getElementById('filterCount').textContent = currentFiltered.length;
+
+  const byDept = countBy(currentFiltered,'dept');
+  const deptLabels = Object.keys(byDept).sort((a,b)=>byDept[b]-byDept[a]);
+  const deptData = deptLabels.map(l=>byDept[l]);
+  if(expDeptChart){ expDeptChart.data.labels=deptLabels; expDeptChart.data.datasets[0].data=deptData; expDeptChart.update(); }
+  else expDeptChart = barChart(document.getElementById('chartExpDept'), deptLabels, deptData, {color:'#123B5C'});
+
+  const byStatus = countBy(currentFiltered,'status');
+  const statusLabels = Object.keys(byStatus);
+  const statusData = statusLabels.map(l=>byStatus[l]);
+  if(expStatusChart){ expStatusChart.data.labels=statusLabels; expStatusChart.data.datasets[0].data=statusData; expStatusChart.update(); }
+  else expStatusChart = doughnut(document.getElementById('chartExpStatus'), statusLabels, statusData);
+
+  const byPriority = countBy(currentFiltered,'priority');
+  const prioLabels = ['High','Medium','Low'].filter(p=>byPriority[p]);
+  const prioData = prioLabels.map(l=>byPriority[l]);
+  const prioColors = prioLabels.map(l=> l==='High' ? '#E8672C' : l==='Medium' ? '#F2A15C' : '#8FC0CF');
+  if(expPriorityChart){ expPriorityChart.data.labels=prioLabels; expPriorityChart.data.datasets[0].data=prioData; expPriorityChart.data.datasets[0].backgroundColor=prioColors; expPriorityChart.update(); }
+  else expPriorityChart = doughnut(document.getElementById('chartExpPriority'), prioLabels, prioData, prioColors);
+
+  renderVacTable();
+}
+
+function sortVac(){
+  currentFiltered.sort((a,b)=>{
+    let x=a[vacSortKey], y=b[vacSortKey];
+    if(typeof x==='string'){ x=x.toLowerCase(); y=y.toLowerCase(); }
+    if(x<y) return vacSortAsc?-1:1;
+    if(x>y) return vacSortAsc?1:-1;
+    return 0;
+  });
+}
+
+const statusColorMap = {
+  'Open - Not Posted':'#A9C7D1', 'Open - Posted':'#5FA0C4', 'In Progress':'#F2A15C',
+  'On Hold':'#8FC0CF', 'Filled':'#1FA187'
+};
+const priorityColorMap = {'High':'#E8672C','Medium':'#F2A15C','Low':'#8FC0CF'};
+
+function renderVacTable(){
+  const body = document.querySelector('#vacTable tbody');
+  body.innerHTML = '';
+  const start = (vacPage-1)*vacPageSize;
+  const rows = currentFiltered.slice(start, start+vacPageSize);
+  rows.forEach(v=>{
+    const tr = document.createElement('tr');
+    const sc = statusColorMap[v.status] || '#A9C7D1';
+    const pc = priorityColorMap[v.priority] || '#A9C7D1';
+    tr.innerHTML = `
+      <td class="mono">${v.id}</td>
+      <td>${v.dept}</td>
+      <td>${v.position}</td>
+      <td class="mono">${v.grade}</td>
+      <td><span class="status-pill" style="background:${sc}22; color:${sc}; border:1px solid ${sc};">${v.status}</span></td>
+      <td><span class="status-pill" style="background:${pc}22; color:${pc}; border:1px solid ${pc};">${v.priority}</span></td>
+      <td>${v.hiring_type}</td>
+      <td class="mono">${v.days_open}</td>`;
+    body.appendChild(tr);
+  });
+  const totalPages = Math.max(1, Math.ceil(currentFiltered.length/vacPageSize));
+  document.getElementById('vacPageInfo').textContent = `Page ${vacPage} / ${totalPages}`;
+  document.getElementById('vacCount').textContent = `Showing ${rows.length} of ${currentFiltered.length} vacancies`;
+  document.getElementById('vacPrev').disabled = vacPage<=1;
+  document.getElementById('vacNext').disabled = vacPage>=totalPages;
+}
+
+['fDept','fGrade','fStatus','fPriority','fHiring'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', applyFilters);
+});
+document.getElementById('resetFilters').addEventListener('click', ()=>{
+  ['fDept','fGrade','fStatus','fPriority','fHiring'].forEach(id=> document.getElementById(id).value='');
+  applyFilters();
+});
+document.querySelectorAll('#vacTable th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.getAttribute('data-key');
+    if(vacSortKey===key) vacSortAsc=!vacSortAsc; else { vacSortKey=key; vacSortAsc=true; }
+    sortVac(); vacPage=1; renderVacTable();
+  });
+});
+document.getElementById('vacPrev').addEventListener('click', ()=>{ if(vacPage>1){ vacPage--; renderVacTable(); }});
+document.getElementById('vacNext').addEventListener('click', ()=>{ const tp=Math.max(1,Math.ceil(currentFiltered.length/vacPageSize)); if(vacPage<tp){ vacPage++; renderVacTable(); }});
+
+renderExplorer();
+
+/* ---------------- 04 Department & Position (unfiltered) ---------------- */
+const deptAll = countBy(vacancies,'dept');
+const deptAllLabels = Object.keys(deptAll).sort((a,b)=>deptAll[b]-deptAll[a]);
+barChart(document.getElementById('chartDeptAll'), deptAllLabels, deptAllLabels.map(l=>deptAll[l]), {color:'#123B5C'});
+
+const posAll = countBy(vacancies,'position');
+const posAllLabels = Object.keys(posAll).sort((a,b)=>posAll[b]-posAll[a]).slice(0,15);
+barChart(document.getElementById('chartPositionAll'), posAllLabels, posAllLabels.map(l=>posAll[l]), {color:'#1FA187'});
+
+/* ---------------- 05 Vacancy Analysis (unfiltered) ---------------- */
+const statusAll = countBy(vacancies,'status');
+const statusAllLabels = Object.keys(statusAll);
+doughnut(document.getElementById('chartStatusAll'), statusAllLabels, statusAllLabels.map(l=>statusAll[l]),
+  statusAllLabels.map(l=>statusColorMap[l]));
+
+const hiringAll = countBy(vacancies,'hiring_type');
+doughnut(document.getElementById('chartHiringAll'), Object.keys(hiringAll), Object.values(hiringAll),
+  ['#123B5C','#E8672C','#A9C7D1']);
+
+const gradeAll = countBy(vacancies,'grade');
+const gradeLabels = Object.keys(gradeAll).sort((a,b)=> parseInt(a.slice(1))-parseInt(b.slice(1)));
+barChart(document.getElementById('chartGradeAll'), gradeLabels, gradeLabels.map(l=>gradeAll[l]), {vertical:true, color:'#5FA0C4', thick:28});
+
+/* ---------------- 06 Candidate Matching ---------------- */
+const matchedRows = matches.filter(m=>m.cand_id);
+document.getElementById('statMatched').textContent = matchedRows.length;
+document.getElementById('statCandidates').textContent = new Set(matchedRows.map(m=>m.cand_id)).size;
+document.getElementById('statDup').textContent = new Set(matchedRows.filter(m=>m.dup).map(m=>m.cand_id)).size;
+
+let matchFiltered = matchedRows.slice();
+let matchPage = 1;
+const matchPageSize = 12;
+let matchSortKey = null, matchSortAsc = true;
+
+function renderMatchTable(){
+  const body = document.querySelector('#matchTable tbody');
+  body.innerHTML = '';
+  const start = (matchPage-1)*matchPageSize;
+  const rows = matchFiltered.slice(start, start+matchPageSize);
+  rows.forEach(m=>{
+    const tr = document.createElement('tr');
+    if(m.dup) tr.classList.add('is-dup');
+    const scoreColor = m.match_score>=90 ? '#1FA187' : m.match_score>=85 ? '#5FA0C4' : '#F2A15C';
+    tr.innerHTML = `
+      <td class="mono">${m.vac_id}</td>
+      <td>${m.dept}</td>
+      <td>${m.position}</td>
+      <td class="mono">${m.grade}</td>
+      <td><b>${m.cand_name}</b>${m.dup ? '<span class="dup-badge" title="Matched to multiple vacancies">×</span>' : ''}</td>
+      <td class="mono">${m.cand_grade}</td>
+      <td class="mono">${m.years_service}</td>
+      <td>${m.qualification}</td>
+      <td><span class="score-pill" style="background:${scoreColor}22; color:${scoreColor}; border:1px solid ${scoreColor};">${m.match_score}%</span></td>`;
+    body.appendChild(tr);
+  });
+  const totalPages = Math.max(1, Math.ceil(matchFiltered.length/matchPageSize));
+  document.getElementById('matchPageInfo').textContent = `Page ${matchPage} / ${totalPages}`;
+  document.getElementById('matchCount').textContent = `Showing ${rows.length} of ${matchFiltered.length} matches`;
+  document.getElementById('matchPrev').disabled = matchPage<=1;
+  document.getElementById('matchNext').disabled = matchPage>=totalPages;
+}
+
+document.getElementById('matchSearch').addEventListener('input', (e)=>{
+  const q = e.target.value.toLowerCase().trim();
+  matchFiltered = matchedRows.filter(m => (m.cand_name+m.position+m.dept+m.vac_id).toLowerCase().includes(q));
+  matchPage = 1;
+  renderMatchTable();
+});
+document.querySelectorAll('#matchTable th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.getAttribute('data-key');
+    if(matchSortKey===key) matchSortAsc=!matchSortAsc; else { matchSortKey=key; matchSortAsc=true; }
+    matchFiltered.sort((a,b)=>{
+      let x=a[key], y=b[key];
+      if(typeof x==='string'){ x=x.toLowerCase(); y=y.toLowerCase(); }
+      if(x<y) return matchSortAsc?-1:1;
+      if(x>y) return matchSortAsc?1:-1;
+      return 0;
+    });
+    matchPage=1; renderMatchTable();
+  });
+});
+document.getElementById('matchPrev').addEventListener('click', ()=>{ if(matchPage>1){ matchPage--; renderMatchTable(); }});
+document.getElementById('matchNext').addEventListener('click', ()=>{ const tp=Math.max(1,Math.ceil(matchFiltered.length/matchPageSize)); if(matchPage<tp){ matchPage++; renderMatchTable(); }});
+
+renderMatchTable();
+
+/* ---------------- Active nav highlight ---------------- */
+const links = document.querySelectorAll('#sidenav a');
+const sections = [...links].map(l=>document.querySelector(l.getAttribute('href')));
+window.addEventListener('scroll', ()=>{
+  let idx = 0;
+  sections.forEach((s,i)=>{ if(s && window.scrollY >= s.offsetTop - 130) idx = i; });
+  links.forEach(l=>l.classList.remove('active'));
+  links[idx].classList.add('active');
+});
+</script>
+</body>
+</html>
